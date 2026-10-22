@@ -6,4 +6,6 @@ router.get("/health", (req, res) => {
   res.json({ status: "ok" });
 });
 
+router.use("/admin", require("./admin"));
+
 module.exports = router;
