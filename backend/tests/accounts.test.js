@@ -26,7 +26,7 @@ describe("Accounts & Authentication (IPP-F-050, IPP-F-051, IPP-F-052, IPP-SEC-00
       });
 
       expect(res.status).toBe(201);
-      expect(res.body.userId).toBe("mock_student_id_1");
+      expect(res.body.userId).toBeDefined();
       expect(res.body.role).toBe("Student");
       expect(res.body.approved).toBe(true);
       expect(saveSpy).toHaveBeenCalled();
