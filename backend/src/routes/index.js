@@ -8,6 +8,8 @@ router.get("/health", (req, res) => {
 
 router.use("/admin", require("./admin"));
 router.use("/auth", require("./auth"));
+router.use("/listings", require("./listings"));
+router.use("/internships", require("./listings"));
 router.use("/applications", require("./applications"));
 
 module.exports = router;

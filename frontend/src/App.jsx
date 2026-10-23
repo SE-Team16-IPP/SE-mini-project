@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import Auth from "./components/Auth";
+import CreateListing from "./components/CreateListing";
+import ListingList from "./components/ListingList";
 import ApplyModal from "./components/ApplyModal";
 
 export default function App() {
@@ -13,10 +15,37 @@ export default function App() {
     }
   });
   const [token, setToken] = useState(() => localStorage.getItem("ipp_token") || localStorage.getItem("token") || "");
+  const [userRole, setUserRole] = useState(() => {
+    try {
+      const saved = localStorage.getItem("ipp_user");
+      if (saved) {
+        const u = JSON.parse(saved);
+        if (u.role) return u.role;
+      }
+    } catch {
+      // ignore
+    }
+    return localStorage.getItem("userRole") || "Student";
+  });
+
+  const [listings, setListings] = useState([]);
+  const [loadingListings, setLoadingListings] = useState(true);
   const [applications, setApplications] = useState([]);
   const [loadingApps, setLoadingApps] = useState(false);
   const [activeListing, setActiveListing] = useState(null);
-  const [customListingId, setCustomListingId] = useState("");
+
+  const fetchListings = () => {
+    setLoadingListings(true);
+    fetch("/api/listings")
+      .then((res) => res.json())
+      .then((data) => {
+        setListings(data.listings || []);
+        setLoadingListings(false);
+      })
+      .catch(() => {
+        setLoadingListings(false);
+      });
+  };
 
   const fetchApplications = () => {
     const authToken = token || localStorage.getItem("ipp_token") || localStorage.getItem("token");
@@ -45,6 +74,7 @@ export default function App() {
       .then((data) => setStatus(data.status))
       .catch(() => setStatus("backend not reachable"));
 
+    fetchListings();
     if (token) {
       fetchApplications();
     }
@@ -52,9 +82,14 @@ export default function App() {
 
   const handleAuthSuccess = (user, authToken) => {
     setCurrentUser(user);
+    if (user?.role) {
+      setUserRole(user.role);
+      localStorage.setItem("userRole", user.role);
+    }
     if (authToken) {
       setToken(authToken);
       localStorage.setItem("token", authToken);
+      localStorage.setItem("ipp_token", authToken);
     }
   };
 
@@ -67,8 +102,18 @@ export default function App() {
     setApplications([]);
   };
 
+  const handleListingCreated = (newListing) => {
+    setListings((prev) => [newListing, ...prev]);
+  };
+
   const handleApplySuccess = (newApp) => {
     setApplications((prev) => [newApp, ...prev]);
+  };
+
+  const toggleRole = () => {
+    const nextRole = userRole === "Recruiter" ? "Student" : "Recruiter";
+    setUserRole(nextRole);
+    localStorage.setItem("userRole", nextRole);
   };
 
   return (
@@ -83,12 +128,12 @@ export default function App() {
     >
       <header
         style={{
-          borderBottom: "1px solid #e2e8f0",
-          paddingBottom: "1rem",
-          marginBottom: "1.5rem",
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
+          borderBottom: "1px solid #e2e8f0",
+          paddingBottom: "1rem",
+          marginBottom: "1.5rem",
         }}
       >
         <div>
@@ -98,6 +143,27 @@ export default function App() {
           <p style={{ margin: 0, fontSize: "0.85rem", color: "#64748b" }}>
             API Status: <span style={{ fontWeight: 600, color: status === "ok" ? "#16a34a" : "#dc2626" }}>{status}</span>
           </p>
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          <span style={{ fontSize: "0.85rem", color: "#475569" }}>
+            Current View: <strong>{userRole}</strong>
+          </span>
+          <button
+            type="button"
+            onClick={toggleRole}
+            style={{
+              padding: "0.4rem 0.8rem",
+              background: "#f1f5f9",
+              border: "1px solid #cbd5e1",
+              borderRadius: "6px",
+              cursor: "pointer",
+              fontSize: "0.8rem",
+              fontWeight: 500,
+            }}
+          >
+            Switch to {userRole === "Recruiter" ? "Student" : "Recruiter"}
+          </button>
         </div>
       </header>
 
@@ -109,74 +175,23 @@ export default function App() {
         <Auth user={currentUser} onAuthSuccess={handleAuthSuccess} onLogout={handleLogout} />
       </section>
 
-      {/* Student Application Quick Action (IPP-F-010) */}
-      <section
-        style={{
-          background: "#ffffff",
-          border: "1px solid #e2e8f0",
-          borderRadius: "8px",
-          padding: "1.5rem",
-          marginBottom: "2rem",
-          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
-        }}
-      >
-        <h2 style={{ marginTop: 0, fontSize: "1.2rem", color: "#1e293b" }}>
-          Apply for an Internship (IPP-F-010)
-        </h2>
-        <p style={{ fontSize: "0.85rem", color: "#64748b", margin: "0 0 1rem 0" }}>
-          Enter a listing ID below or apply directly to any active opportunity with your resume and cover note.
-        </p>
+      {/* Recruiter Section: Create Listing (IPP-F-001) */}
+      {userRole === "Recruiter" && (
+        <CreateListing
+          token={token}
+          onListingCreated={handleListingCreated}
+        />
+      )}
 
-        <div style={{ display: "flex", gap: "0.75rem", maxWidth: "600px" }}>
-          <input
-            type="text"
-            value={customListingId}
-            onChange={(e) => setCustomListingId(e.target.value)}
-            placeholder="Enter Listing ID (e.g. 66f000000000000000000001)..."
-            style={{
-              flex: 1,
-              padding: "0.55rem 0.75rem",
-              border: "1px solid #cbd5e1",
-              borderRadius: "6px",
-              fontSize: "0.9rem",
-            }}
-          />
-          <button
-            type="button"
-            onClick={() => {
-              if (customListingId.trim()) {
-                setActiveListing({
-                  _id: customListingId.trim(),
-                  title: "Internship Opportunity",
-                  company: "Company",
-                });
-              }
-            }}
-            style={{
-              padding: "0.55rem 1.25rem",
-              background: "#2563eb",
-              color: "#ffffff",
-              border: "none",
-              borderRadius: "6px",
-              fontWeight: 600,
-              cursor: "pointer",
-              fontSize: "0.9rem",
-            }}
-          >
-            Apply with Resume
-          </button>
-        </div>
-      </section>
-
-      {/* Submitted Applications Dashboard */}
-      <section>
+      {/* Opportunities Section: Listing Feed */}
+      <section style={{ marginBottom: "2rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
           <h2 style={{ margin: 0, fontSize: "1.3rem", color: "#1e293b" }}>
-            My Submitted Applications ({applications.length})
+            Active Internship Opportunities ({listings.length})
           </h2>
           <button
             type="button"
-            onClick={fetchApplications}
+            onClick={fetchListings}
             style={{
               background: "transparent",
               border: "none",
@@ -190,65 +205,101 @@ export default function App() {
           </button>
         </div>
 
-        {loadingApps ? (
-          <p style={{ color: "#64748b" }}>Loading applications...</p>
-        ) : applications.length === 0 ? (
-          <div
-            style={{
-              padding: "2rem",
-              textAlign: "center",
-              background: "#f8fafc",
-              borderRadius: "8px",
-              border: "1px dashed #cbd5e1",
-              color: "#64748b",
-            }}
-          >
-            No applications submitted yet. Apply for an active internship above.
-          </div>
+        {loadingListings ? (
+          <p style={{ color: "#64748b" }}>Loading opportunities...</p>
         ) : (
-          <div style={{ display: "grid", gap: "1rem" }}>
-            {applications.map((app) => (
-              <div
-                key={app._id}
-                style={{
-                  background: "#ffffff",
-                  border: "1px solid #e2e8f0",
-                  borderRadius: "8px",
-                  padding: "1.25rem",
-                }}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <h3 style={{ margin: 0, fontSize: "1.1rem", color: "#0f172a" }}>
-                    {app.listing?.title || "Internship"} • {app.listing?.company || "Company"}
-                  </h3>
-                  <span
-                    style={{
-                      background: "#e0f2fe",
-                      color: "#0369a1",
-                      padding: "0.25rem 0.6rem",
-                      borderRadius: "9999px",
-                      fontSize: "0.8rem",
-                      fontWeight: 600,
-                    }}
-                  >
-                    Status: {app.status}
-                  </span>
-                </div>
-                <p style={{ margin: "0.5rem 0", fontSize: "0.85rem", color: "#475569" }}>
-                  📄 <strong>Resume:</strong> {app.resumePath}
-                </p>
-                {app.coverNote && (
-                  <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.85rem", color: "#64748b", fontStyle: "italic" }}>
-                    &ldquo;{app.coverNote}&rdquo;
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
+          <ListingList
+            listings={listings}
+            onApplyClick={(listing) => {
+              setActiveListing(listing);
+            }}
+          />
         )}
       </section>
 
-      {/* Modal Popup */}
+      {/* Student Section: Submitted Applications (IPP-F-010) */}
+      {userRole === "Student" && (
+        <section>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+            <h2 style={{ margin: 0, fontSize: "1.3rem", color: "#1e293b" }}>
+              My Submitted Applications ({applications.length})
+            </h2>
+            <button
+              type="button"
+              onClick={fetchApplications}
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "#2563eb",
+                cursor: "pointer",
+                fontSize: "0.85rem",
+                fontWeight: 600,
+              }}
+            >
+              🔄 Refresh
+            </button>
+          </div>
+
+          {loadingApps ? (
+            <p style={{ color: "#64748b" }}>Loading applications...</p>
+          ) : applications.length === 0 ? (
+            <div
+              style={{
+                padding: "2rem",
+                textAlign: "center",
+                background: "#f8fafc",
+                borderRadius: "8px",
+                border: "1px dashed #cbd5e1",
+                color: "#64748b",
+              }}
+            >
+              No applications submitted yet. Browse and apply to active internships above.
+            </div>
+          ) : (
+            <div style={{ display: "grid", gap: "1rem" }}>
+              {applications.map((app) => (
+                <div
+                  key={app._id}
+                  style={{
+                    background: "#ffffff",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "8px",
+                    padding: "1.25rem",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <h3 style={{ margin: 0, fontSize: "1.1rem", color: "#0f172a" }}>
+                      {app.listing?.title || "Internship"} • {app.listing?.company || "Company"}
+                    </h3>
+                    <span
+                      style={{
+                        background: "#e0f2fe",
+                        color: "#0369a1",
+                        padding: "0.25rem 0.6rem",
+                        borderRadius: "9999px",
+                        fontSize: "0.8rem",
+                        fontWeight: 600,
+                      }}
+                    >
+                      Status: {app.status}
+                    </span>
+                  </div>
+                  <p style={{ margin: "0.5rem 0", fontSize: "0.85rem", color: "#475569" }}>
+                    📄 <strong>Resume:</strong> {app.resumePath}
+                  </p>
+                  {app.coverNote && (
+                    <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.85rem", color: "#64748b", fontStyle: "italic" }}>
+                      &ldquo;{app.coverNote}&rdquo;
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Apply Modal */}
       {activeListing && (
         <ApplyModal
           listing={activeListing}
