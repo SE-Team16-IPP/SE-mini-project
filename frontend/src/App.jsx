@@ -1,24 +1,49 @@
 import { useEffect, useState } from "react";
 import CreateListing from "./components/CreateListing";
 import ListingList from "./components/ListingList";
+import ApplyModal from "./components/ApplyModal";
 
 export default function App() {
   const [status, setStatus] = useState("checking...");
   const [listings, setListings] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(() => localStorage.getItem("token") || "");
+  const [loadingListings, setLoadingListings] = useState(true);
+  const [applications, setApplications] = useState([]);
+  const [loadingApps, setLoadingApps] = useState(false);
+  const [token, setToken] = useState(() => localStorage.getItem("token") || localStorage.getItem("ipp_token") || "");
   const [userRole, setUserRole] = useState(() => localStorage.getItem("userRole") || "Student");
+  const [activeListing, setActiveListing] = useState(null);
 
   const fetchListings = () => {
-    setLoading(true);
+    setLoadingListings(true);
     fetch("/api/listings")
       .then((res) => res.json())
       .then((data) => {
         setListings(data.listings || []);
-        setLoading(false);
+        setLoadingListings(false);
       })
       .catch(() => {
-        setLoading(false);
+        setLoadingListings(false);
+      });
+  };
+
+  const fetchApplications = () => {
+    const authToken = token || localStorage.getItem("token") || localStorage.getItem("ipp_token");
+    if (!authToken) {
+      setLoadingApps(false);
+      return;
+    }
+
+    setLoadingApps(true);
+    fetch("/api/applications/mine", {
+      headers: { Authorization: `Bearer ${authToken}` },
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        setApplications(data.applications || []);
+        setLoadingApps(false);
+      })
+      .catch(() => {
+        setLoadingApps(false);
       });
   };
 
@@ -29,10 +54,17 @@ export default function App() {
       .catch(() => setStatus("backend not reachable"));
 
     fetchListings();
-  }, []);
+    if (token) {
+      fetchApplications();
+    }
+  }, [token]);
 
   const handleListingCreated = (newListing) => {
     setListings((prev) => [newListing, ...prev]);
+  };
+
+  const handleApplySuccess = (newApp) => {
+    setApplications((prev) => [newApp, ...prev]);
   };
 
   const toggleRole = () => {
@@ -92,6 +124,7 @@ export default function App() {
         </div>
       </header>
 
+      {/* Recruiter Section: Create Listing (IPP-F-001) */}
       {userRole === "Recruiter" && (
         <CreateListing
           token={token}
@@ -99,7 +132,8 @@ export default function App() {
         />
       )}
 
-      <section>
+      {/* Opportunities Section: Listing Feed */}
+      <section style={{ marginBottom: "2rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
           <h2 style={{ margin: 0, fontSize: "1.3rem", color: "#1e293b" }}>
             Active Internship Opportunities ({listings.length})
@@ -120,17 +154,112 @@ export default function App() {
           </button>
         </div>
 
-        {loading ? (
+        {loadingListings ? (
           <p style={{ color: "#64748b" }}>Loading opportunities...</p>
         ) : (
           <ListingList
             listings={listings}
             onApplyClick={(listing) => {
-              alert(`Apply feature is available in PR C for: ${listing.title}`);
+              setActiveListing(listing);
             }}
           />
         )}
       </section>
+
+      {/* Student Section: Submitted Applications (IPP-F-010) */}
+      {userRole === "Student" && (
+        <section>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+            <h2 style={{ margin: 0, fontSize: "1.3rem", color: "#1e293b" }}>
+              My Submitted Applications ({applications.length})
+            </h2>
+            <button
+              type="button"
+              onClick={fetchApplications}
+              style={{
+                background: "transparent",
+                border: "none",
+                color: "#2563eb",
+                cursor: "pointer",
+                fontSize: "0.85rem",
+                fontWeight: 600,
+              }}
+            >
+              🔄 Refresh
+            </button>
+          </div>
+
+          {loadingApps ? (
+            <p style={{ color: "#64748b" }}>Loading applications...</p>
+          ) : applications.length === 0 ? (
+            <div
+              style={{
+                padding: "2rem",
+                textAlign: "center",
+                background: "#f8fafc",
+                borderRadius: "8px",
+                border: "1px dashed #cbd5e1",
+                color: "#64748b",
+              }}
+            >
+              No applications submitted yet. Browse and apply to active internships above.
+            </div>
+          ) : (
+            <div style={{ display: "grid", gap: "1rem" }}>
+              {applications.map((app) => (
+                <div
+                  key={app._id}
+                  style={{
+                    background: "#ffffff",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: "8px",
+                    padding: "1.25rem",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <h3 style={{ margin: 0, fontSize: "1.1rem", color: "#0f172a" }}>
+                      {app.listing?.title || "Internship"} • {app.listing?.company || "Company"}
+                    </h3>
+                    <span
+                      style={{
+                        background: "#e0f2fe",
+                        color: "#0369a1",
+                        padding: "0.25rem 0.6rem",
+                        borderRadius: "9999px",
+                        fontSize: "0.8rem",
+                        fontWeight: 600,
+                      }}
+                    >
+                      Status: {app.status}
+                    </span>
+                  </div>
+                  <p style={{ margin: "0.5rem 0", fontSize: "0.85rem", color: "#475569" }}>
+                    📄 <strong>Resume:</strong> {app.resumePath}
+                  </p>
+                  {app.coverNote && (
+                    <p style={{ margin: "0.25rem 0 0 0", fontSize: "0.85rem", color: "#64748b", fontStyle: "italic" }}>
+                      &ldquo;{app.coverNote}&rdquo;
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Apply Modal */}
+      {activeListing && (
+        <ApplyModal
+          listing={activeListing}
+          token={token}
+          onClose={() => setActiveListing(null)}
+          onSuccess={(newApp) => {
+            handleApplySuccess(newApp);
+            setActiveListing(null);
+          }}
+        />
+      )}
     </main>
   );
 }
