@@ -1,16 +1,37 @@
 import { useEffect, useState } from "react";
+import Auth from "./components/Auth";
 import CreateListing from "./components/CreateListing";
 import ListingList from "./components/ListingList";
 import ApplyModal from "./components/ApplyModal";
 
 export default function App() {
   const [status, setStatus] = useState("checking...");
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem("ipp_user");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [token, setToken] = useState(() => localStorage.getItem("ipp_token") || localStorage.getItem("token") || "");
+  const [userRole, setUserRole] = useState(() => {
+    try {
+      const saved = localStorage.getItem("ipp_user");
+      if (saved) {
+        const u = JSON.parse(saved);
+        if (u.role) return u.role;
+      }
+    } catch {
+      // ignore
+    }
+    return localStorage.getItem("userRole") || "Student";
+  });
+
   const [listings, setListings] = useState([]);
   const [loadingListings, setLoadingListings] = useState(true);
   const [applications, setApplications] = useState([]);
   const [loadingApps, setLoadingApps] = useState(false);
-  const [token, setToken] = useState(() => localStorage.getItem("token") || localStorage.getItem("ipp_token") || "");
-  const [userRole, setUserRole] = useState(() => localStorage.getItem("userRole") || "Student");
   const [activeListing, setActiveListing] = useState(null);
 
   const fetchListings = () => {
@@ -27,7 +48,7 @@ export default function App() {
   };
 
   const fetchApplications = () => {
-    const authToken = token || localStorage.getItem("token") || localStorage.getItem("ipp_token");
+    const authToken = token || localStorage.getItem("ipp_token") || localStorage.getItem("token");
     if (!authToken) {
       setLoadingApps(false);
       return;
@@ -58,6 +79,28 @@ export default function App() {
       fetchApplications();
     }
   }, [token]);
+
+  const handleAuthSuccess = (user, authToken) => {
+    setCurrentUser(user);
+    if (user?.role) {
+      setUserRole(user.role);
+      localStorage.setItem("userRole", user.role);
+    }
+    if (authToken) {
+      setToken(authToken);
+      localStorage.setItem("token", authToken);
+      localStorage.setItem("ipp_token", authToken);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("ipp_token");
+    localStorage.removeItem("ipp_user");
+    localStorage.removeItem("token");
+    setCurrentUser(null);
+    setToken("");
+    setApplications([]);
+  };
 
   const handleListingCreated = (newListing) => {
     setListings((prev) => [newListing, ...prev]);
@@ -98,7 +141,7 @@ export default function App() {
             Online Internship & Placement Portal
           </h1>
           <p style={{ margin: 0, fontSize: "0.85rem", color: "#64748b" }}>
-            API Status: <span style={{ fontWeight: 600, color: "#16a34a" }}>{status}</span>
+            API Status: <span style={{ fontWeight: 600, color: status === "ok" ? "#16a34a" : "#dc2626" }}>{status}</span>
           </p>
         </div>
 
@@ -123,6 +166,14 @@ export default function App() {
           </button>
         </div>
       </header>
+
+      {/* Account & Authentication Section */}
+      <section style={{ marginBottom: "2rem" }}>
+        <h2 style={{ fontSize: "1.25rem", color: "#1e293b", marginBottom: "0.75rem" }}>
+          Account &amp; Authentication
+        </h2>
+        <Auth user={currentUser} onAuthSuccess={handleAuthSuccess} onLogout={handleLogout} />
+      </section>
 
       {/* Recruiter Section: Create Listing (IPP-F-001) */}
       {userRole === "Recruiter" && (
