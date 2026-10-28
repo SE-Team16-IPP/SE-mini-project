@@ -12,4 +12,8 @@ router.use("/listings", require("./listings"));
 router.use("/internships", require("./listings"));
 router.use("/applications", require("./applications"));
 
+// Sprint 2 feature routes
+const applicationsMine = require("./features/applicationsMine");
+router.use(applicationsMine.mount, applicationsMine.router);
+
 module.exports = router;
