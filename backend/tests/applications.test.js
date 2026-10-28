@@ -88,7 +88,7 @@ describe("IPP-F-010: Apply with resume and cover note", () => {
     expect(res.body.error).toMatch(/Listing not found/i);
   });
 
-  test("returns 400 if listing is not Active (e.g. Closed)", async () => {
+  test("returns 400 if listing is not Active (e.g. Closed) (IPP-F-012)", async () => {
     jest.spyOn(Listing, "findById").mockResolvedValue({
       ...activeListing,
       status: "Closed",
@@ -106,7 +106,7 @@ describe("IPP-F-010: Apply with resume and cover note", () => {
     expect(res.body.error).toMatch(/no longer active/i);
   });
 
-  test("returns 410 if listing deadline has passed", async () => {
+  test("returns 410 if listing deadline has passed (IPP-F-012)", async () => {
     jest.spyOn(Listing, "findById").mockResolvedValue({
       ...activeListing,
       deadline: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
@@ -124,13 +124,32 @@ describe("IPP-F-010: Apply with resume and cover note", () => {
     expect(res.body.error).toMatch(/deadline has passed/i);
   });
 
-  test("rejects duplicate application by same student for same listing (409)", async () => {
+  test("rejects duplicate application by same student for same listing (409) (IPP-F-011)", async () => {
     jest.spyOn(Listing, "findById").mockResolvedValue(activeListing);
     jest.spyOn(Application, "findOne").mockResolvedValue({
       _id: "app1",
       student: mockStudentId,
       listing: mockListingId,
     });
+
+    const res = await request(app)
+      .post("/api/applications")
+      .set("Authorization", `Bearer ${tokenFor("Student", mockStudentId)}`)
+      .send({
+        listingId: mockListingId,
+        resumePath: "https://example.com/resumes/john_doe.pdf",
+      });
+
+    expect(res.status).toBe(409);
+    expect(res.body.error).toMatch(/already applied/i);
+  });
+
+  test("catches duplicate key error (code 11000) on save during race condition (409) (IPP-F-011)", async () => {
+    jest.spyOn(Listing, "findById").mockResolvedValue(activeListing);
+    jest.spyOn(Application, "findOne").mockResolvedValue(null);
+    const duplicateErr = new Error("E11000 duplicate key error");
+    duplicateErr.code = 11000;
+    jest.spyOn(Application.prototype, "save").mockRejectedValue(duplicateErr);
 
     const res = await request(app)
       .post("/api/applications")
