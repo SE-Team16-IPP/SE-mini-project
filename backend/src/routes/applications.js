@@ -59,6 +59,7 @@ router.post("/", requireAuth, requireRole("Student"), async (req, res) => {
       return res.status(404).json({ error: "Listing not found" });
     }
 
+    // IPP-F-012: applications are closed after the deadline (or once a listing is closed)
     if (listing.status !== "Active") {
       return res.status(400).json({ error: "Listing is no longer active" });
     }
@@ -67,7 +68,7 @@ router.post("/", requireAuth, requireRole("Student"), async (req, res) => {
       return res.status(410).json({ error: "Application deadline has passed" });
     }
 
-    // Check duplicate application
+    // IPP-F-011: one application per student per listing
     const existing = await Application.findOne({
       student: req.user.id,
       listing: listing._id,
