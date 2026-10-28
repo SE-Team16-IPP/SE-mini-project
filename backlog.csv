@@ -1,0 +1,61 @@
+ID,Title,Type,Module,Priority,StoryPoints,Sprint,Assignee,AcceptanceCriteria
+IPP-T-001,Repo and MERN project skeleton,Technical,Setup,High,3,Sprint 1,MEMBER2,"Frontend, backend and Python service folders exist; app runs locally with one command"
+IPP-T-002,MongoDB connection and data models,Technical,Setup,High,3,Sprint 1,MEMBER2,"Models for User, Listing, Application, Test, Attempt created and connected to DB"
+IPP-T-003,GitHub Actions CI for PRs,Technical,Setup,High,3,Sprint 1,MEMBER2,Workflow runs lint and tests on every PR and reports status
+IPP-T-004,Test framework setup,Technical,Setup,High,2,Sprint 1,MEMBER3,Jest/Supertest configured; one sample test runs in CI
+IPP-F-050,Register as Student or Recruiter,Functional,Accounts,High,3,Sprint 1,MEMBER1,"Valid name, email, password creates an account with chosen role"
+IPP-F-051,Email validation and duplicate rejection,Functional,Accounts,High,2,Sprint 1,MEMBER1,Bad email format and already registered email are rejected with an error message
+IPP-F-052,Login with email and password,Functional,Accounts,High,3,Sprint 1,MEMBER1,Correct credentials start a session; wrong credentials show an error
+IPP-SEC-001,Store passwords as salted hashes,Security,Accounts,High,2,Sprint 1,MEMBER1,No plain text password in DB; hash verified at login
+IPP-F-053,Role-based access to functions,Functional,Accounts,High,5,Sprint 1,MEMBER2,"Each route is limited to Student, Recruiter or Admin as specified"
+IPP-SEC-004,Server-side role check on every request,Security,Accounts,High,2,Sprint 1,MEMBER2,Disallowed role receives an authorisation error
+IPP-F-054,Admin approves Recruiter accounts,Functional,Accounts,Medium,3,Sprint 2,MEMBER3,Unapproved Recruiter cannot post listings until Admin approves
+IPP-F-001,Recruiter creates internship listing,Functional,Listings,High,5,Sprint 1,MEMBER1,All eight listing fields saved and listing appears for Students
+IPP-F-002,Recruiter edits or closes own listings only,Functional,Listings,High,3,Sprint 2,MEMBER3,Edit and close work on own listings; others are blocked
+IPP-F-003,Paginated list of active listings,Functional,Listings,High,3,Sprint 1,MEMBER3,Students see active listings in pages
+IPP-F-004,Search listings by keyword,Functional,Listings,High,3,Sprint 2,MEMBER3,"Keyword matches title, company and required skills"
+IPP-F-005,Filter listings,Functional,Listings,Medium,5,Sprint 2,MEMBER3,"Filter by location, duration, stipend range and skills"
+IPP-F-006,Hide listings after deadline,Functional,Listings,High,2,Sprint 2,MEMBER3,Listing past its deadline is not shown as active
+IPP-F-007,View full listing details,Functional,Listings,High,2,Sprint 1,MEMBER3,Student can open a listing and see all fields
+IPP-F-008,Admin removes guideline-violating listing,Functional,Listings,Low,2,Sprint 2,MEMBER1,Removed listing no longer visible to Students
+IPP-F-010,Apply with resume and cover note,Functional,Applications,High,5,Sprint 1,MEMBER1,Application saved with resume and optional note for an active listing
+IPP-F-011,Reject duplicate application,Functional,Applications,High,2,Sprint 2,MEMBER3,Second application shows an already applied message
+IPP-F-012,Reject application after deadline,Functional,Applications,High,2,Sprint 2,MEMBER2,Late application is rejected with a message
+IPP-F-013,Accept only PDF resumes up to 2 MB,Functional,Applications,High,2,Sprint 1,MEMBER3,Non-PDF or oversized file is rejected with an error
+IPP-F-014,Withdraw application before decision,Functional,Applications,Medium,3,Sprint 2,MEMBER1,Withdraw allowed only while no decision has been made
+IPP-F-015,Recruiter views applicants of own listings,Functional,Applications,High,3,Sprint 1,MEMBER3,Recruiter sees applicants only for listings they created
+IPP-F-016,Recruiter sets application status,Functional,Applications,High,3,Sprint 1,MEMBER3,"Status can be Under Review, Shortlisted, Rejected or Selected"
+IPP-F-017,In-portal notification on status change,Functional,Applications,Medium,5,Sprint 2,MEMBER2,Student sees a notification when status changes
+IPP-F-020,Student application dashboard,Functional,Progress,High,3,Sprint 2,MEMBER1,All of the Student's applications shown with current status
+IPP-F-021,Application status timeline,Functional,Progress,Medium,3,Sprint 2,MEMBER1,Each status change shown with its date
+IPP-F-022,Aptitude tests attempted per category,Functional,Progress,Medium,3,Sprint 2,MEMBER1,Percentage attempted shown per category
+IPP-F-030,Admin creates aptitude test,Functional,Aptitude,High,5,Sprint 2,MEMBER2,"Test saved with category, time limit and questions with one correct answer"
+IPP-F-031,Browse tests by category,Functional,Aptitude,High,2,Sprint 2,MEMBER3,Students can list tests per category
+IPP-F-032,Countdown timer during attempt,Functional,Aptitude,High,3,Sprint 2,MEMBER1,Timer counts down while attempting
+IPP-F-033,Auto-submit on time expiry,Functional,Aptitude,High,3,Sprint 2,MEMBER1,Attempt is submitted when time limit ends
+IPP-F-034,Auto-score and store attempt,Functional,Aptitude,High,5,Sprint 2,MEMBER2,Score computed and stored against Student and test
+IPP-F-035,Show result with correct answers,Functional,Aptitude,High,3,Sprint 2,MEMBER3,Per-question correctness and correct answer displayed after submit
+IPP-F-036,Multiple attempts stored separately,Functional,Aptitude,Medium,2,Sprint 2,MEMBER2,Each attempt kept as its own record
+IPP-F-040,Score trend per category,Functional,Analytics,Medium,5,Sprint 2,MEMBER1,Student sees score trend across attempts per category
+IPP-F-041,Weak area identification,Functional,Analytics,Medium,3,Sprint 2,MEMBER3,Category with lowest average score is displayed
+IPP-F-042,Recruiter listing analytics,Functional,Analytics,Medium,5,Sprint 2,MEMBER1,Application count and status distribution per listing
+IPP-F-043,Admin platform totals,Functional,Analytics,Low,3,Sprint 2,MEMBER3,"Totals of users, active listings, applications and attempts shown"
+IPP-NF-001,Search response time under load,Non-Functional,Performance,Medium,3,Sprint 2,MEMBER2,Search meets the IPP-NF-001 target in a load test
+IPP-NF-002,Scoring and result display time,Non-Functional,Performance,Medium,2,Sprint 2,MEMBER2,Result shown within the IPP-NF-002 limit
+IPP-NF-003,Availability,Non-Functional,Reliability,Low,2,Sprint 2,MEMBER2,Deployment and uptime check in place
+IPP-NF-004,Capacity,Non-Functional,Performance,Low,3,Sprint 2,MEMBER3,Load test at the IPP-NF-004 user counts
+IPP-NF-005,Usability test,Non-Functional,Usability,Medium,3,Sprint 2,MEMBER1,Usability check done with first-time users and result recorded
+IPP-NF-006,Browser and screen compatibility,Non-Functional,Usability,Medium,2,Sprint 2,MEMBER1,"Works on Chrome, Firefox, Edge and at 360 px width"
+IPP-NF-007,Autosave test answers,Non-Functional,Reliability,Medium,5,Sprint 2,MEMBER2,Answers saved periodically during an attempt
+IPP-NF-008,Unit test coverage,Non-Functional,Maintainability,Medium,3,Sprint 2,MEMBER3,Coverage report meets the IPP-NF-008 target in CI
+IPP-SO-1,Verify confidentiality of data and resumes,Security,Security,Medium,1,Sprint 2,MEMBER3,Only permitted roles can read Student data
+IPP-SO-2,Verify integrity of scores and statuses,Security,Security,Medium,1,Sprint 2,MEMBER3,Students cannot change scores or statuses
+IPP-SO-3,Verify authenticated access only,Security,Security,Medium,1,Sprint 2,MEMBER3,Unauthenticated requests are refused
+IPP-SEC-002,HTTPS with TLS 1.2 or higher,Security,Security,Medium,2,Sprint 2,MEMBER2,Deployed site serves only over HTTPS
+IPP-SEC-003,Session expiry after inactivity,Security,Security,Medium,2,Sprint 2,MEMBER1,Session ends after the inactivity limit
+IPP-SEC-005,Input validation and sanitisation,Security,Security,High,3,Sprint 2,MEMBER2,Injection and XSS payloads are rejected or escaped
+IPP-SEC-006,Restrict resume download,Security,Security,Medium,3,Sprint 2,MEMBER3,"Only owner, listing Recruiter and Admin can download"
+IPP-SEC-007,Account lockout after failed logins,Security,Security,Medium,3,Sprint 2,MEMBER1,Account locks for the specified time after repeated failures
+IPP-SEC-008,"Server-side scoring, hidden answers",Security,Security,High,3,Sprint 2,MEMBER2,Correct answers not sent to client before submit
+IPP-T-005,Documentation and deviations log,Technical,Docs,Medium,3,Sprint 2,MEMBER1,"README, updated SRS/SAD/Test Plan and deviations list ready"
+IPP-T-006,Deployment and demo videos,Technical,Docs,Medium,2,Sprint 2,MEMBER2,1-min and 2-min videos uploaded to repo

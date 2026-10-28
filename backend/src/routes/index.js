@@ -12,4 +12,17 @@ router.use("/listings", require("./listings"));
 router.use("/internships", require("./listings"));
 router.use("/applications", require("./applications"));
 
+// Auto-mount every file in routes/features. Each exports { mount, router }.
+const fs = require("fs");
+const path = require("path");
+const featuresDir = path.join(__dirname, "features");
+if (fs.existsSync(featuresDir)) {
+  fs.readdirSync(featuresDir)
+    .filter((file) => file.endsWith(".js"))
+    .sort()
+    .forEach((file) => {
+      const feature = require(path.join(featuresDir, file));
+      router.use(feature.mount, feature.router);
+    });
+}
 module.exports = router;
