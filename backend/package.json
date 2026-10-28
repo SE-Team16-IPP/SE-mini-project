@@ -23,5 +23,12 @@
     "globals": "^15.9.0",
     "jest": "^29.7.0",
     "supertest": "^7.0.0"
+  },
+  "jest": {
+    "coverageThreshold": {
+      "global": {
+        "lines": "70"
+      }
+    }
   }
 }
