@@ -16,6 +16,9 @@ router.use("/applications", require("./applications"));
 const testsAdmin = require("./features/testsAdmin");
 router.use(testsAdmin.mount, testsAdmin.router);
 
+const attemptsStart = require("./features/attemptsStart");
+router.use(attemptsStart.mount, attemptsStart.router);
+
 const applicationsMine = require("./features/applicationsMine");
 router.use(applicationsMine.mount, applicationsMine.router);
 
