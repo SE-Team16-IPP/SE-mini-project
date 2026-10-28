@@ -6,7 +6,10 @@ const attemptSchema = new mongoose.Schema(
     test: { type: mongoose.Schema.Types.ObjectId, ref: "Test", required: true },
     answers: [{ questionId: mongoose.Schema.Types.ObjectId, selectedIndex: Number }],
     score: { type: Number, default: 0 },
+    startedAt: { type: Date, default: null },
+    expiresAt: { type: Date, default: null },
     submittedAt: { type: Date, default: null },
+    autoSubmitted: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
