@@ -1,18 +1,20 @@
 # Online Internship and Placement Prep Portal (Team 16)
 
-A MERN web app: students browse internships, apply with a PDF resume, track their applications and take timed
-aptitude tests. Recruiters post listings and manage applicants. Admins create aptitude tests.
+A web application made using Python,Javascript MERN, MongoDB and node.js: 
+An app where Students can browse internships, apply with a PDF resume, track their applications and take timed
+aptitude tests. 
+Recruiters can post listings and manage applicants. Admins create aptitude tests.
 A small Python (Flask) service is included for later analytics work.
 
 ## What you need installed
-- Node.js 20 or newer (check with `node -v`)
+- Node.js 20 or newer (check in powershell with `node -v`)
 - MongoDB Community Server 4.2 or newer, running locally on the default port 27017
   (or a MongoDB Atlas connection string, which goes in `MONGO_URI` below)
-- Optional: Python 3.11 for the Flask service
+- Python 3.11 for the Flask service
 
-## Run it (two options)
-
-### Option A: one server, one port (easiest for the demo)
+## How to run the application
+- Clone the repo in your system
+- Open powershell in the project folder and run these commands:
 ```
 cd frontend
 npm install
@@ -23,24 +25,8 @@ npm install
 npm run seed
 npm start
 ```
-Open http://localhost:5000
+Open http://localhost:5000, all user types (student, recruiter, and admin) will use the same port
 
-### Option B: development mode with hot reload (two terminals)
-Terminal 1:
-```
-cd backend
-copy .env.example .env
-npm install
-npm run seed
-npm run dev
-```
-Terminal 2:
-```
-cd frontend
-npm install
-npm run dev
-```
-Open http://localhost:5173 (it forwards /api calls to port 5000).
 
 ## Demo logins (created by `npm run seed`)
 | Role | Email | Password |
@@ -50,15 +36,6 @@ Open http://localhost:5173 (it forwards /api calls to port 5000).
 | Admin | admin@ipp.test | Admin@123 |
 
 You can also register new Student and Recruiter accounts on the login page. Admin accounts come from the seed only.
-
-## Demo flow (about 2 minutes)
-1. Log in as the recruiter, open **Post a listing** and publish an internship.
-2. Log out, register or log in as the student, search for the listing, open it and apply with a PDF resume.
-3. Open **My applications** to see the status.
-4. Log in as the recruiter again, open **My listings**, then **View applicants**, view the resume and change the status to Shortlisted.
-5. As the student, open **My applications** to see the new status and the timeline.
-6. As the student, open **Aptitude tests**, start a test, answer a few questions and submit. The result page shows the score and the correct answers.
-7. Optional: log in as the admin and create a new test under **Create a test**.
 
 ## Checks
 ```
@@ -82,7 +59,7 @@ python app.py            # http://localhost:8000/health
 - `backend/src/middleware/` auth and role checks, input sanitising, resume upload and validation
 - `backend/scripts/` `seed.js` (demo data) and `smoke.js` (end-to-end check)
 - `frontend/src/pages/` the React pages for each role
-- `docs/DEVIATIONS.md` differences from the submitted SRS, SAD and Test Plan
+- `docs/DEVIATIONS.md` Changes made from the SRS, SAD and Test Plan first made
 - `.github/workflows/ci.yml` lint and tests on every pull request
 
 ## Troubleshooting
